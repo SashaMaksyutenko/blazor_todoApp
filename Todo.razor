@@ -1,0 +1,84 @@
+﻿@inject blazor_todo_app.Data.Repository.IRepository repository;
+@page "/todo"
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+
+            <h2 class="text-center">Todo (@todos.Count(item=>!item.IsDone))</h2>
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Is Done</th>
+                        <th scope="col"></th>
+
+                    </tr>
+                </thead>
+                @foreach (var item in todos)
+                    {
+<tbody>
+    <tr>
+        <td>
+            <div style="@(item.IsDone?"color:green;text-decoration:line-through;":"color:red")">
+                @item.Title
+            </div>
+        </td>
+        <td>
+            @if (!item.IsDone)
+            {
+                <input type="checkbox" value="item.IsDone" @onchange="(() => StatusChanger(item))" />
+            }
+            else
+            {
+                <input type="checkbox" checked value="item.IsDone" @onchange="(() => StatusChanger(item))" />
+            }
+            
+        </td>
+        <td>
+            <button class="btn btn-danger" @onclick="(()=>DeleteTodo(item.Id))">Delete</button>
+        </td>
+    </tr>
+</tbody>
+                    }
+                
+            </table>
+            <div class="row">
+                <div class="col">
+                    <input class="form-control" placeholder="Type something to do" @bind="newTodo"/>
+                </div
+<div class="col">
+    <button class="btn btn-success" @onclick="AddTodo">Add to do</button>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    private IEnumerable<TodoItem> todos = new List<TodoItem>();
+    protected override void OnInitialized()
+    {
+        todos = repository.GetAllItems();
+    }
+
+    private string newTodo;
+    private void AddTodo()
+    {
+        if (!string.IsNullOrWhiteSpace(newTodo))
+        {
+            //todos.Add(new TodoItem { Title = newTodo });
+            repository.AddTodo(newTodo);
+            newTodo = string.Empty;
+        }
+    }
+    private void DeleteTodo(int id)
+    {
+        //todos.Remove(deletedItem);
+        repository.DeleteItem(id);
+    }
+    private void StatusChanger(TodoItem changedItem)
+    {
+        changedItem.IsDone = !changedItem.IsDone;
+        repository.ValueChanged(changedItem);
+    }
+}
+
